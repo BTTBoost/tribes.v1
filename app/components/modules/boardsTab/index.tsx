@@ -28,7 +28,6 @@ const Board = (props: Props) => {
           <Grid item xs={3} key={index}>
             <BoardButton
               variant="contained"
-              color="secondary"
               disabled={!isAuthenticated}
               onClick={() => {
                 router.push(
