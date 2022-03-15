@@ -26,7 +26,6 @@ import { useMoralis } from "react-moralis";
 import { useRouter } from "next/router";
 import { Epoch } from "../../../types";
 import { monthMap } from "../../../constants";
-import { useBoard } from "../taskBoard";
 import { notify, notifyError } from "../settingsTab";
 import { Toaster } from "react-hot-toast";
 import { registryTemp } from "../../../constants";
@@ -38,6 +37,7 @@ import { BoardData, Column, Task } from "../../../types";
 import NumericVoting, { Details } from "./numericVoting";
 import ForAgainstVoting from "./forAgainstVoting";
 import ZeroEpochs from "./zeroEpochs";
+import { useSpace } from "../../../../pages/tribe/[id]/space/[bid]";
 
 type Props = {
   expanded: boolean;
@@ -61,7 +61,7 @@ type VotesRemaining = {
 const EpochList = ({ expanded, handleChange }: Props) => {
   const { Moralis, user } = useMoralis();
   const router = useRouter();
-  const { data, setData, handleTabChange } = useBoard();
+  const { space, setSpace, handleTabChange } = useSpace();
   const bid = router.query.bid as string;
   const [votesGiven, setVotesGiven] = useState({} as VotesGivenAllEpochs);
   const [votesRemaining, setVotesRemaining] = useState({} as VotesRemaining);
@@ -93,20 +93,20 @@ const EpochList = ({ expanded, handleChange }: Props) => {
   };
 
   const handleEpochUpdateAfterSave = (index: number, newEpoch: Epoch) => {
-    const temp = Object.assign({}, data);
+    const temp = Object.assign({}, space);
     temp.epochs[index] = newEpoch;
-    setData(temp);
+    setSpace(temp);
   };
 
   const getDetails = (choices: Array<string>, type: string) => {
     var details = {} as Details;
     if (type === "Member") {
       for (var choice of choices) {
-        details[choice] = { choice: data.memberDetails[choice].username };
+        details[choice] = { choice: space.memberDetails[choice].username };
       }
     } else if (type === "Card") {
       for (var choice of choices) {
-        details[choice] = { choice: data.taskDetails[choice].title };
+        details[choice] = { choice: space.taskDetails[choice].title };
       }
     }
     return details;
@@ -121,8 +121,8 @@ const EpochList = ({ expanded, handleChange }: Props) => {
     getEpochs(Moralis, bid)
       .then((res: any) => {
         console.log(res);
-        setData(
-          Object.assign(data, {
+        setSpace(
+          Object.assign(space, {
             epochs: res.epochs,
             taskDetails: res.taskDetails,
           })
@@ -149,14 +149,14 @@ const EpochList = ({ expanded, handleChange }: Props) => {
       <Accordion hidden>
         <AccordionSummary />
       </Accordion>
-      {data.epochs?.length === 0 ? (
+      {space.epochs?.length === 0 ? (
         <ZeroEpochs />
       ) : (
-        data.epochs?.map((epoch, index) => (
+        space.epochs?.map((epoch, index) => (
           <>
             {" "}
             {(Object.keys(epoch.memberStats).includes(user?.id as string) ||
-              data.roles[user?.id as string] === "admin") && (
+              space.roles[user?.id as string] === "admin") && (
               <Accordion
                 disableGutters
                 key={index}
@@ -299,7 +299,7 @@ const EpochList = ({ expanded, handleChange }: Props) => {
                                   Save
                                 </PrimaryButton>
                               )}
-                              {data.roles[user?.id as string] === "admin" && (
+                              {space.roles[user?.id as string] === "admin" && (
                                 <PrimaryButton
                                   endIcon={<CloseIcon />}
                                   variant="outlined"
@@ -338,9 +338,9 @@ const EpochList = ({ expanded, handleChange }: Props) => {
                                   Move cards that passed to
                                 </Typography>
                                 <Autocomplete
-                                  options={data.columnOrder}
+                                  options={space.columnOrder}
                                   getOptionLabel={(option) =>
-                                    option && data.columns[option].title
+                                    option && space.columns[option].title
                                   }
                                   value={passColumn}
                                   onChange={(event, newValue) => {
@@ -360,9 +360,9 @@ const EpochList = ({ expanded, handleChange }: Props) => {
                                   {`Move cards that didn't pass to`}
                                 </Typography>
                                 <Autocomplete
-                                  options={data.columnOrder}
+                                  options={space.columnOrder}
                                   getOptionLabel={(option) =>
-                                    option && data.columns[option].title
+                                    option && space.columns[option].title
                                   }
                                   value={noPassColumn}
                                   onChange={(event, newValue) => {
@@ -397,7 +397,7 @@ const EpochList = ({ expanded, handleChange }: Props) => {
                                       noPassColumn
                                     )
                                       .then((res: any) => {
-                                        setData(res);
+                                        setSpace(res);
                                         handleTabChange({} as any, 0);
                                         setIsLoading(false);
                                       })

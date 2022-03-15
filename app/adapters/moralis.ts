@@ -57,7 +57,7 @@ export function getBoards(Moralis: any, teamId: string) {
   return Moralis.Cloud.run("getBoards", params);
 }
 
-export function getBoard(Moralis: any, boardId: string) {
+export function getSpace(Moralis: any, boardId: string) {
   const params = {
     boardId: boardId,
   };
