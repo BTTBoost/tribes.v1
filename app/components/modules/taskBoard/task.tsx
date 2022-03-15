@@ -33,13 +33,7 @@ const TaskContainer = ({ task, index, column }: Props) => {
           column={column}
         />
       )}
-      <Draggable
-        draggableId={task.taskId}
-        index={index}
-        isDragDisabled={
-          !(task.access.assignee || task.access.creator || task.access.reviewer)
-        }
-      >
+      <Draggable draggableId={task.taskId} index={index}>
         {(provided, snapshot) => (
           <TaskCard
             {...provided.draggableProps}
