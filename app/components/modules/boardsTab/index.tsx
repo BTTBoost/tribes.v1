@@ -31,7 +31,7 @@ const Board = (props: Props) => {
               disabled={!isAuthenticated}
               onClick={() => {
                 router.push(
-                  `/tribe/${tribe.teamId}/board/${board._id}`,
+                  `/tribe/${tribe.teamId}/space/${board._id}`,
                   undefined
                 );
               }}

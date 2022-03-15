@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { createTheme, ThemeProvider, useTheme } from "@mui/material";
+import { createTheme, Theme, ThemeProvider, useTheme } from "@mui/material";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -12,8 +12,9 @@ import {
 import { ResolveCallOptions } from "react-moralis/lib/hooks/internal/_useResolveAsyncCall";
 import { getTaskEpoch } from "../../../app/adapters/moralis";
 import Navbar from "../../../app/components/modules/navbar";
-import Sidebar from "../../../app/components/modules/sidebar";
+import Sidebar from "../../../app/components/modules/spaceSidebar";
 import TribeTemplate from "../../../app/components/templates/tribe";
+import { getTheme } from "../../../app/constants/muiTheme";
 import {
   setNavbarLogo,
   setNavbarTitle,
@@ -52,14 +53,17 @@ const TribePage: NextPage<Props> = (props: Props) => {
   const context = useProviderTribe();
   const { setLoading, getTeam, setTribe, isMember } = context;
   const { dispatch } = useGlobal();
+  const [theme, setTheme] = useState<Theme>(createTheme(getTheme(0)));
   useEffect(() => {
+    setTheme(
+      createTheme(getTheme(parseInt(localStorage.getItem("theme") || "0")))
+    );
     setLoading(true);
     getTeam({
       onSuccess: (res: any) => {
         console.log(res);
-        setNavbarLogo(dispatch, res.logo);
-        setNavbarTitle(dispatch, res.name);
         setTribe(res as Team);
+        setTheme(createTheme(getTheme(res.theme)));
         setLoading(false);
       },
       params: {
@@ -67,8 +71,6 @@ const TribePage: NextPage<Props> = (props: Props) => {
       },
     });
   }, [id, isMember]);
-  const { palette } = useTheme();
-  let theme = createTheme();
   return (
     <>
       <Head>
@@ -78,7 +80,7 @@ const TribePage: NextPage<Props> = (props: Props) => {
       </Head>
       <ThemeProvider theme={theme}>
         <TribeContext.Provider value={context}>
-          <PageContainer palette={palette}>
+          <PageContainer theme={theme}>
             <Sidebar />
             <TribeTemplate />
           </PageContainer>
