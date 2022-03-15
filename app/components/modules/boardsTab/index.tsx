@@ -28,7 +28,7 @@ const Board = (props: Props) => {
           <Grid item xs={3} key={index}>
             <BoardButton
               variant="contained"
-              disabled={!isAuthenticated}
+              color="secondary"
               onClick={() => {
                 router.push(
                   `/tribe/${tribe.teamId}/space/${board._id}`,
