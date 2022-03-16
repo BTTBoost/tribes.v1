@@ -179,6 +179,8 @@ export interface BoardData {
   team: Team[];
   defaultPayment: DefaultPayment;
   tokenGating: TokenGate;
+  private: boolean;
+  creatingEpoch: boolean;
 }
 
 export type TokenInfo = {

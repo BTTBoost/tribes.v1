@@ -122,7 +122,7 @@ const CreateEpoch = (props: Props) => {
   const getCardChoices = () => {
     var choices = [] as string[];
     for (let i = 0; i < cards.length; i++) {
-      if (isChecked.at(i)) {
+      if (isCardChecked.at(i)) {
         choices.push(cards[i]);
       }
     }
@@ -220,17 +220,19 @@ const CreateEpoch = (props: Props) => {
                   />
                 )}
               />
-              <TextField
-                id="filled-hidden-label-normal"
-                value={passThreshold}
-                onChange={(event) => {
-                  setPassThreshold(event.target.value);
-                }}
-                sx={{ mb: 2 }}
-                placeholder="Pass Threshold (%)"
-                type={"number"}
-                size="small"
-              />
+              {strategy === "Pass/No Pass" && (
+                <TextField
+                  id="filled-hidden-label-normal"
+                  value={passThreshold}
+                  onChange={(event) => {
+                    setPassThreshold(event.target.value);
+                  }}
+                  sx={{ mb: 2 }}
+                  placeholder="Pass Threshold (%)"
+                  type={"number"}
+                  size="small"
+                />
+              )}
               {strategy === "Quadratic voting" && (
                 <Box sx={{ flex: "1 1 auto" }}>
                   <Grid container spacing={1}>
@@ -410,6 +412,9 @@ const CreateEpoch = (props: Props) => {
                     notify("Please fill all the fields", "error");
                     return;
                   }
+                  const temp = Object.assign({}, data);
+                  temp.creatingEpoch = true;
+                  setData(temp);
                   const members = getMembers();
                   const choices =
                     type === "Member" ? getMemberChoices() : getCardChoices();
@@ -432,6 +437,9 @@ const CreateEpoch = (props: Props) => {
                       handleClose();
                       console.log(res);
                       handleNewEpochAddition(res);
+                      const temp = Object.assign({}, data);
+                      temp.creatingEpoch = false;
+                      setData(temp);
                       handleTabChange({} as any, 1);
                     })
                     .catch((err: any) => alert(err));

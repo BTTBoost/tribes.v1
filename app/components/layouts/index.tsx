@@ -38,7 +38,7 @@ const Layout = ({ children }: Props) => {
 
   useEffect(() => {
     initContracts(dispatch);
-    initRegistry(dispatch, Moralis);
+    //initRegistry(dispatch, Moralis);
   }, []);
   return (
     <OuterDiv>
