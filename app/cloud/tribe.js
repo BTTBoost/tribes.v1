@@ -108,7 +108,7 @@ Moralis.Cloud.define("getPublicTeams", async (request) => {
 Moralis.Cloud.define("getMyTeams", async (request) => {
   try {
     const userInfoQuery = new Moralis.Query("UserInfo");
-    userInfoQuery.equalTo("userId", request.user.id);
+    userInfoQuery.equalTo("userId", request.user?.id);
     const userInfo = await userInfoQuery.first();
     if (userInfo) {
       const teamQuery = new Moralis.Query("Team");
@@ -117,7 +117,7 @@ Moralis.Cloud.define("getMyTeams", async (request) => {
     }
   } catch (err) {
     logger.error(
-      `Error while getting tribes of user ${request.user.id}: ${err}`
+      `Error while getting tribes of user ${request.user?.id}: ${err}`
     );
     throw `Error while getting tribes of user ${err}`;
   }
