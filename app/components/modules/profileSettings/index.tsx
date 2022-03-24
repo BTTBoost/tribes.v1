@@ -18,11 +18,13 @@ import { getMD5String } from "../../../utils/utils";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { OptionsButton } from "../themePopover";
 import { ButtonText } from "../exploreSidebar";
-import { createProfile, getProfileIdByHandle } from "../../../adapters/lens";
+import { createProfile } from "../../../adapters/lens";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { ModelManager } from "@glazed/devtools";
+import { model as basicProfileModel } from "@datamodels/identity-profile-basic";
+import { model as cryptoAccountsModel } from "@datamodels/identity-accounts-crypto";
+import { model as webAccountsModel } from "@datamodels/identity-accounts-web";
 import { tryAuthenticate } from "../auth";
-import { fromWei } from "../../../adapters/contract";
 
 type Props = {};
 
@@ -40,6 +42,14 @@ const ProfileSettings = (props: Props) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const ceramic = new CeramicClient();
+  const manager = new ModelManager(ceramic);
+
+  // Add the imported models to the manager
+  manager.addJSONModel(basicProfileModel);
+  manager.addJSONModel(cryptoAccountsModel);
+  manager.addJSONModel(webAccountsModel);
+
   const handleClose = () => setIsOpen(false);
   return (
     <>
@@ -113,100 +123,84 @@ const ProfileSettings = (props: Props) => {
                 />
               </FieldContainer>
 
-              {showButton === 0 && (
-                <PrimaryButton
-                  variant="outlined"
-                  color="secondary"
-                  sx={{ width: "50%", mt: 2, borderRadius: 1 }}
-                  loading={isLoading}
-                  onClick={() => {
-                    setIsLoading(true);
-
-                    createProfile({
-                      to: user?.get("ethAddress"),
-                      handle: userName,
-                      imageURI:
-                        "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
-                      followModule:
-                        "0x0000000000000000000000000000000000000000",
-                      followModuleData: [],
-                      followNFTURI:
-                        "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
-                    })
-                      .then((res: any) => {
-                        getProfileIdByHandle(userName).then((res: any) => {
-                          console.log(res);
-
-                          if (user && user?.get("lensId") !== res) {
-                            user.set("lensId", res.toNumber());
-                            user.save().then((res: any) => {
-                              setIsLoading(false);
-                              setShowButton(1);
-                            });
-                          }
+              <PrimaryButton
+                variant="outlined"
+                color="secondary"
+                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                loading={isLoading}
+                onClick={() => {
+                  setIsLoading(true);
+                  var promises = [];
+                  createProfile({
+                    to: user?.get("ethAddress"),
+                    handle: userName,
+                    imageURI:
+                      "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
+                    followModule: "0x0000000000000000000000000000000000000000",
+                    followModuleData: [],
+                    followNFTURI:
+                      "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
+                  })
+                    .then((res: any) => console.log(res))
+                    .catch((err: any) => alert(err));
+                  if (user) {
+                    user.set("profileNFT", userName);
+                    user.save().then((res: any) => {
+                      setIsLoading(false);
+                      //handleClose();
+                    });
+                  }
+                }}
+              >
+                Generate Profile NFT
+              </PrimaryButton>
+              <PrimaryButton
+                variant="outlined"
+                color="secondary"
+                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                loading={isLoading}
+                onClick={() => {
+                  setIsLoading(true);
+                  tryAuthenticate()
+                    .then((res: any) => {
+                      console.log(res);
+                      if (user && res) {
+                        user.set("did", res._id);
+                        user.save().then((res: any) => {
+                          setIsLoading(false);
+                          handleClose();
                         });
-                      })
-                      .catch((err: any) => {
-                        alert(err);
-                        setIsLoading(false);
-                      });
-                  }}
-                >
-                  Generate Profile NFT
-                </PrimaryButton>
-              )}
-              {showButton === 1 && (
-                <PrimaryButton
-                  variant="outlined"
-                  color="secondary"
-                  sx={{ width: "50%", mt: 2, borderRadius: 1 }}
-                  loading={isLoading}
-                  onClick={() => {
-                    setIsLoading(true);
-                    tryAuthenticate()
-                      .then((res: any) => {
-                        console.log(res);
-                        if (user && res._id !== user?.get("did")) {
-                          user.set("did", res._id);
-                          user.save().then((res: any) => {
-                            setIsLoading(false);
-                            setShowButton(2);
-                          });
-                        }
+                      }
 
-                        setIsLoading(false);
-                      })
-                      .catch((err: any) => {
-                        alert(err);
-                        setIsLoading(false);
-                      });
-                  }}
-                >
-                  Connect Ceramic
-                </PrimaryButton>
-              )}
-              {showButton === 2 && (
-                <PrimaryButton
-                  variant="outlined"
-                  color="secondary"
-                  sx={{ width: "50%", mt: 2, borderRadius: 1 }}
-                  loading={isLoading}
-                  onClick={() => {
-                    setIsLoading(true);
-                    if (user) {
-                      user.set("username", userName);
-                      user.set("email", userEmail);
-                      user.save().then((res: any) => {
-                        setIsLoading(false);
-                        handleClose();
-                        // add router
-                      });
-                    }
-                  }}
-                >
-                  Go to profile
-                </PrimaryButton>
-              )}
+                      setIsLoading(false);
+                    })
+                    .catch((err: any) => {
+                      alert(err);
+                      setIsLoading(false);
+                    });
+                }}
+              >
+                Connect Ceramic
+              </PrimaryButton>
+              <PrimaryButton
+                variant="outlined"
+                color="secondary"
+                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                loading={isLoading}
+                onClick={() => {
+                  setIsLoading(true);
+                  if (user) {
+                    user.set("username", userName);
+                    user.set("email", userEmail);
+                    user.save().then((res: any) => {
+                      setIsLoading(false);
+                      handleClose();
+                    });
+                  }
+                }}
+              >
+                Save
+              </PrimaryButton>
             </ModalContent>
           </ModalContainer>
         </Grow>
