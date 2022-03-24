@@ -703,3 +703,17 @@ export function updateColumnPermissions(
   };
   return Moralis.Cloud.run("updateColumnPermissions", params);
 }
+
+export function createDecentralizedTribe(
+  Moralis: any,
+  name: string,
+  lensId: number,
+  streamId: string
+) {
+  const params = {
+    name: name,
+    lensId: lensId,
+    streamId: streamId,
+  };
+  return Moralis.Cloud.run("createDecentralizedTribe", params);
+}

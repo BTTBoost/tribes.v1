@@ -325,3 +325,46 @@ Moralis.Cloud.define("updateTribeMembers", async (request) => {
     throw `Error while updating board members ${err}`;
   }
 });
+
+Moralis.Cloud.define("createDecentralizedTribe", async (request) => {
+  const logger = Moralis.Cloud.getLogger();
+  try {
+    const whitelisted = await isWhitelisted(request.user.get("ethAddress"));
+    if (!whitelisted)
+      throw {
+        code: 101,
+        message: "Please fill out the waitlist to create tribe",
+      };
+
+    var team = new Moralis.Object("Team");
+    const teamId = crypto.randomUUID();
+    logger.info(teamId);
+
+    // Initialize tribe data
+    var roles = {};
+    roles[request.user.id] = 3;
+    tribe.set("teamId", teamId);
+    tribe.set("name", name);
+    tribe.set("members", members);
+    tribe.set("roles", roles);
+    tribe.set("isPublic", true);
+    tribe.set("theme", 0);
+    tribe.set("lensId", request.params.lensId);
+    tribe.set("streamId", request.params.streamId);
+
+    // Add tribe to tribe creator's user info
+    const userInfo = await getUserByUserId(request.user.id);
+
+    teamMemberships = userInfo.get("tribes").concat([teamId]);
+    userInfo.set("tribes", teamMemberships);
+
+    await Moralis.Object.saveAll([team, userInfo], { useMasterKey: true });
+
+    return team;
+  } catch (err) {
+    logger.error(
+      `Error while creating tribe with name ${request.params.name} ${err}`
+    );
+    throw err;
+  }
+});

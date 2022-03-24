@@ -13,12 +13,21 @@ import React, { useState } from "react";
 import { useMoralis } from "react-moralis";
 import CloseIcon from "@mui/icons-material/Close";
 import { ModalHeading, PrimaryButton } from "../../elements/styledComponents";
-import { createTribe } from "../../../adapters/moralis";
+import {
+  createTribe,
+  createDecentralizedTribe,
+} from "../../../adapters/moralis";
 import { useRouter } from "next/router";
 import { Toaster } from "react-hot-toast";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { SidebarButton } from "../exploreSidebar";
 import { notify } from "../settingsTab";
+import { createProfile, getProfileIdByHandle } from "../../../adapters/lens";
+import { CeramicClient } from "@ceramicnetwork/http-client";
+import { ModelManager } from "@glazed/devtools";
+import { tryAuthenticate } from "../auth";
+import { TileDocument } from "@ceramicnetwork/stream-tile";
+import { createNftDidUrl } from "nft-did-resolver";
 
 type Props = {};
 
@@ -27,11 +36,17 @@ const CreateTribeModal = (props: Props) => {
   const handleOpen = () => setIsOpen(true);
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
+  const [multiSig, setMultiSig] = useState("");
+  const [lensId, setLensId] = useState(-1);
+  const [streamId, setStreamId] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
+  const [showButton, setShowButton] = useState(0);
   const router = useRouter();
   const { palette } = useTheme();
 
-  const { Moralis, isAuthenticated, authenticate } = useMoralis();
+  const { Moralis, isAuthenticated, authenticate, user } = useMoralis();
+  const ceramic = new CeramicClient();
 
   const onSubmit = () => {
     setIsLoading(true);
@@ -99,15 +114,86 @@ const CreateTribeModal = (props: Props) => {
                 value={name}
                 onChange={(evt) => setName(evt.target.value)}
               />
-              <PrimaryButton
-                variant="outlined"
-                sx={{ width: "60%", mt: 2, borderRadius: 1 }}
-                onClick={onSubmit}
-                loading={isLoading}
-                color="inherit"
-              >
-                Create your tribe
-              </PrimaryButton>
+              <TextField
+                placeholder="Tribe Multi-sig"
+                fullWidth
+                value={multiSig}
+                onChange={(evt) => setMultiSig(evt.target.value)}
+              />
+              {showButton === 0 && (
+                <PrimaryButton
+                  variant="outlined"
+                  sx={{ width: "60%", mt: 2, borderRadius: 1 }}
+                  onClick={() => {
+                    setIsLoading(true);
+                    console.log(name);
+                    console.log(multiSig);
+
+                    createProfile({
+                      to: user?.get("ethAddress"),
+                      handle: name,
+                      imageURI:
+                        "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
+                      followModule:
+                        "0x0000000000000000000000000000000000000000",
+                      followModuleData: [],
+                      followNFTURI:
+                        "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
+                    })
+                      .then((res: any) => {
+                        getProfileIdByHandle(name).then((res: any) => {
+                          setLensId(res.toNumber());
+                          setShowButton(1);
+                          setIsLoading(false);
+                        });
+                      })
+                      .catch((err: any) => {
+                        alert(err);
+                        setIsLoading(false);
+                      });
+                  }}
+                  loading={isLoading}
+                  color="inherit"
+                >
+                  Generate profile NFT
+                </PrimaryButton>
+              )}
+              {showButton === 1 && (
+                <PrimaryButton
+                  variant="outlined"
+                  sx={{ width: "60%", mt: 2, borderRadius: 1 }}
+                  onClick={() => {
+                    const didNFT = createNftDidUrl({
+                      chainId: "eip155:80001",
+                      namespace: "erc721",
+                      contract: "0x6CC5F26402C4d6Ab0CB9d139242E2682aA80b751",
+                      tokenId: `${lensId}`,
+                    });
+                    console.log(didNFT);
+                    TileDocument.create(
+                      ceramic,
+                      { name: name },
+                      { controllers: [didNFT] }
+                    ).then((res: any) => {
+                      console.log(res);
+                      createDecentralizedTribe(Moralis, name, lensId, res.id)
+                        .then((res: any) => {
+                          setIsLoading(false);
+                          //handleClose();
+                        })
+                        .catch((err: any) => {
+                          setIsLoading(false);
+                          //handleClose();
+                          notify(err.message, "error");
+                        });
+                    });
+                  }}
+                  loading={isLoading}
+                  color="inherit"
+                >
+                  Create your tribe
+                </PrimaryButton>
+              )}
             </ModalContent>
           </ModalContainer>
         </Grow>
