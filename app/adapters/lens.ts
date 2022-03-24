@@ -12,7 +12,6 @@ export function getLensHubContract() {
 
 export async function createProfile(profileInfo: any) {
   const lensContract = getLensHubContract();
-  console.log(lensContract);
   const tx = await lensContract.createProfile(profileInfo);
   console.log(tx);
 
@@ -22,6 +21,12 @@ export async function createProfile(profileInfo: any) {
 export async function getProfile(profileId: number) {
   const lensContract = getLensHubContract();
   const profile = await lensContract.getProfile(profileId);
+  return profile;
+}
+
+export async function getProfileIdByHandle(address: string) {
+  const lensContract = getLensHubContract();
+  const profile = await lensContract.getProfileIdByHandle(address);
   return profile;
 }
 
