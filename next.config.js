@@ -12,6 +12,9 @@ const nextConfig = {
   images: {
     domains: ["ipfs.moralis.io"],
   },
+  experimental: {
+    esmExternals: "loose",
+  },
 };
 
 module.exports = nextConfig;

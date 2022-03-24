@@ -6,6 +6,7 @@ import Layout from "../app/components/layouts";
 import "../app/styles/globals.css";
 import "../app/styles/mde.css";
 import GlobalContextProvider from "../app/context/globalContext";
+import { Provider } from "@self.id/framework";
 
 function MyApp({ Component, pageProps }: AppProps) {
   // let theme = createTheme(classicDark);
@@ -18,6 +19,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       serverUrl={process.env.MORALIS_SERVER_ID || ""}
     >
       <GlobalContextProvider>
+        {/* <Provider client={{ ceramic: "testnet-clay" }}> */}
         <Script
           src="https://kit.fontawesome.com/65590ff3eb.js"
           crossOrigin="anonymous"
@@ -25,6 +27,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} canonical={url} key={url} />
         </Layout>
+        {/* </Provider> */}
       </GlobalContextProvider>
     </MoralisProvider>
   );
