@@ -32,7 +32,6 @@
     "@self.id/framework": "^0.2.0",
     "@walletconnect/web3-provider": "^1.7.1",
     "@web3auth/web3auth": "^0.2.4",
-    "ceramic-profile-page": "file:ceramic-profile-page-1.0.0.tgz",
     "crypto-js": "^4.1.1",
     "crypto-md5": "^1.0.0",
     "dayjs": "^1.10.7",

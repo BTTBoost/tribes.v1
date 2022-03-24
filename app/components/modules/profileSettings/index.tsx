@@ -126,7 +126,8 @@ const ProfileSettings = (props: Props) => {
               <PrimaryButton
                 variant="outlined"
                 color="secondary"
-                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                fullWidth
+                sx={{ mt: 2, borderRadius: 1 }}
                 loading={isLoading}
                 onClick={() => {
                   setIsLoading(true);
@@ -142,7 +143,7 @@ const ProfileSettings = (props: Props) => {
                       "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                   })
                     .then((res: any) => console.log(res))
-                    .catch((err: any) => alert(err));
+                    .catch((err: any) => alert(err.message));
                   if (user) {
                     user.set("profileNFT", userName);
                     user.save().then((res: any) => {
@@ -154,7 +155,7 @@ const ProfileSettings = (props: Props) => {
               >
                 Generate Profile NFT
               </PrimaryButton>
-              <PrimaryButton
+              {/* <PrimaryButton
                 variant="outlined"
                 color="secondary"
                 sx={{ width: "50%", mt: 2, borderRadius: 1 }}
@@ -181,11 +182,12 @@ const ProfileSettings = (props: Props) => {
                 }}
               >
                 Connect Ceramic
-              </PrimaryButton>
+              </PrimaryButton> */}
               <PrimaryButton
                 variant="outlined"
                 color="secondary"
-                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                fullWidth
+                sx={{ mt: 2, borderRadius: 1 }}
                 loading={isLoading}
                 onClick={() => {
                   setIsLoading(true);
