@@ -9,7 +9,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMoralis } from "react-moralis";
 import CloseIcon from "@mui/icons-material/Close";
 import { ModalHeading, PrimaryButton } from "../../elements/styledComponents";
@@ -22,12 +22,23 @@ import { Toaster } from "react-hot-toast";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { SidebarButton } from "../exploreSidebar";
 import { notify } from "../settingsTab";
-import { createProfile, getProfileIdByHandle } from "../../../adapters/lens";
+import {
+  createProfile,
+  getProfileIdByHandle,
+  getProfile,
+} from "../../../adapters/lens";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { ModelManager } from "@glazed/devtools";
 import { tryAuthenticate } from "../auth";
 import { TileDocument } from "@ceramicnetwork/stream-tile";
-import { createNftDidUrl } from "nft-did-resolver";
+import {
+  createNftDidUrl,
+  didToCaip,
+} from "../../../libraries/nft-did-resolver/src/index";
+import { getResolver } from "../../../libraries/nft-did-resolver/src/index";
+import type { NftResolverConfig } from "nft-did-resolver";
+import { Resolver } from "did-resolver";
+import { ethers } from "ethers";
 
 type Props = {};
 
@@ -39,6 +50,7 @@ const CreateTribeModal = (props: Props) => {
   const [multiSig, setMultiSig] = useState("");
   const [lensId, setLensId] = useState(-1);
   const [streamId, setStreamId] = useState("");
+  const [client, setClient] = useState({});
 
   const [isLoading, setIsLoading] = useState(false);
   const [showButton, setShowButton] = useState(0);
@@ -46,8 +58,6 @@ const CreateTribeModal = (props: Props) => {
   const { palette } = useTheme();
 
   const { Moralis, isAuthenticated, authenticate, user } = useMoralis();
-  const ceramic = new CeramicClient();
-
   const onSubmit = () => {
     setIsLoading(true);
     createTribe(Moralis, name)
@@ -64,6 +74,15 @@ const CreateTribeModal = (props: Props) => {
         notify(err.message, "error");
       });
   };
+
+  useEffect(() => {
+    getProfile(4).then((res: any) => {
+      console.log(`sfsd`);
+      console.log(res);
+    });
+    const ceramic = new CeramicClient("https://ceramic-clay.3boxlabs.com/");
+    setClient(ceramic);
+  }, []);
 
   return (
     <>
@@ -135,8 +154,9 @@ const CreateTribeModal = (props: Props) => {
                       imageURI:
                         "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                       followModule:
-                        "0x0000000000000000000000000000000000000000",
-                      followModuleData: [],
+                        "0x7db9f2bd5288091bf1727484c56e520905f51838",
+                      followModuleData:
+                        "0x308d0a92352bcd1d68b4a8b788b2ebbd90582cc6",
                       followNFTURI:
                         "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                     })
@@ -158,22 +178,52 @@ const CreateTribeModal = (props: Props) => {
                   Generate profile NFT
                 </PrimaryButton>
               )}
-              {showButton === 1 && (
+              {
+                <PrimaryButton
+                  variant="outlined"
+                  color="secondary"
+                  sx={{ width: "50%", mt: 2, borderRadius: 1 }}
+                  loading={isLoading}
+                  onClick={() => {
+                    setIsLoading(true);
+                    tryAuthenticate(client)
+                      .then((res: any) => {
+                        console.log(res);
+                        setIsLoading(false);
+                      })
+                      .catch((err: any) => {
+                        alert(err);
+                        setIsLoading(false);
+                      });
+                  }}
+                >
+                  Connect Ceramic
+                </PrimaryButton>
+              }
+              {showButton === 0 && (
                 <PrimaryButton
                   variant="outlined"
                   sx={{ width: "60%", mt: 2, borderRadius: 1 }}
                   onClick={() => {
-                    const didNFT = createNftDidUrl({
-                      chainId: "eip155:80001",
+                    /*
+                    const nftDID = createNftDidUrl({
+                      chainId: "eip155:4",
                       namespace: "erc721",
-                      contract: "0x6CC5F26402C4d6Ab0CB9d139242E2682aA80b751",
-                      tokenId: `${lensId}`,
-                    });
-                    console.log(didNFT);
+                      contract: "0x308d0a92352Bcd1d68b4A8b788B2ebBD90582CC6",
+                      tokenId: "2",
+                    });*/
+                    const nftDID =
+                      "did:nft:eip155:4_erc721:0x308d0a92352bcd1d68b4a8b788b2ebbd90582cc6_1";
+
                     TileDocument.create(
-                      ceramic,
+                      client,
                       { name: name },
-                      { controllers: [didNFT] }
+                      {
+                        //controllers: [res.didDocument.controller],
+                        controllers: [
+                          "did:nft:eip155:4_erc721:0x308d0a92352bcd1d68b4a8b788b2ebbd90582cc6_1",
+                        ],
+                      }
                     ).then((res: any) => {
                       console.log(res);
                       createDecentralizedTribe(Moralis, name, lensId, res.id)
