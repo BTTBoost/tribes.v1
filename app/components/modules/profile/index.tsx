@@ -6,12 +6,25 @@ import {
   useViewerRecord,
 } from "@self.id/framework";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LinkIcon from "@mui/icons-material/Link";
 import { Box, Typography } from "@mui/material";
 import { PrimaryButton } from "../../elements/styledComponents";
 import EditProfileModal from "../editProfile";
 import { GitHub } from "@mui/icons-material";
+// import { Integration } from "lit-ceramic-sdk";
+import dynamic from "next/dynamic";
+
+// const Integration = dynamic(
+//   () =>
+//     import("lit-ceramic-sdk").then((mod) => {
+//       console.log(mod.Integration);
+//       console.log(mod);
+//     }),
+//   {
+//     ssr: false,
+//   }
+// );
 
 type Props = {};
 
@@ -21,13 +34,42 @@ const Profile = () => {
   const [connection, connect] = useConnection();
   const publicRecord = usePublicRecord("basicProfile", id);
   const publicSocialRecord = usePublicRecord("alsoKnownAs", id);
-  console.log(publicSocialRecord);
+  const [litClient, setLitClient] = useState({} as any);
+  const [decryptedLocation, setDecryptedLocation] = useState("");
 
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
+
+  const InitializeLitProtocol = async () => {
+    const Integration = (await import("lit-ceramic-sdk")).Integration;
+    let litCeramicIntegration = new Integration(
+      "https://ceramic-clay.3boxlabs.com",
+      "polygon"
+    );
+    litCeramicIntegration.startLitClient(window);
+    setLitClient(litCeramicIntegration);
+  };
+
+  useEffect(() => {
+    InitializeLitProtocol();
+  }, []);
+
+  const decrypt = () => {
+    litClient
+      .readAndDecrypt(publicRecord.content?.homeLocation)
+      .then((value: string) => {
+        console.log(value);
+        setDecryptedLocation(value);
+      });
+  };
+
   return (
     <Container>
-      <EditProfileModal isOpen={isOpen} handleClose={handleClose} />
+      <EditProfileModal
+        isOpen={isOpen}
+        handleClose={handleClose}
+        litClient={litClient}
+      />
       <Banner
         src={
           publicRecord.content?.background?.original
@@ -82,7 +124,7 @@ const Profile = () => {
         <Typography variant="h6" color="text.secondary">
           Verified Socials
         </Typography>
-        {publicSocialRecord.content?.accounts.map((account, index) => (
+        {publicSocialRecord.content?.accounts?.map((account, index) => (
           <PrimaryButton
             fullWidth
             key={index}
@@ -102,6 +144,17 @@ const Profile = () => {
             </Typography>
           </PrimaryButton>
         ))}
+        <Typography color="text.primary">
+          {decryptedLocation || publicRecord.content?.homeLocation}
+        </Typography>
+        <PrimaryButton
+          variant="outlined"
+          sx={{ width: "60%", m: 2, borderRadius: 1 }}
+          onClick={decrypt}
+          color="inherit"
+        >
+          Decrypt
+        </PrimaryButton>
       </Body>
     </Container>
   );
