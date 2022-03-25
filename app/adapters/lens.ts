@@ -26,8 +26,17 @@ export async function getProfile(profileId: number) {
 
 export async function getProfileIdByHandle(address: string) {
   const lensContract = getLensHubContract();
-  const profile = await lensContract.getProfileIdByHandle(address);
-  return profile;
+  // const profile = await lensContract.getProfileIdByHandle(address);
+  // return profile;
+  const tx = await lensContract.follow([9], [[]]);
+  return tx.wait();
+
+  // const ownerOf = await followNFT.ownerOf(1);
+  // return ownerOf;
+
+  // const followNFTAddr = await lensContract.getFollowNFT(1);
+  // return followNFTAddr;
+  return;
 }
 
 /*

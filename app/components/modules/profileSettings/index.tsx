@@ -18,7 +18,11 @@ import { getMD5String } from "../../../utils/utils";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { OptionsButton } from "../themePopover";
 import { ButtonText } from "../exploreSidebar";
-import { createProfile } from "../../../adapters/lens";
+import {
+  createProfile,
+  getProfile,
+  getProfileIdByHandle,
+} from "../../../adapters/lens";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { ModelManager } from "@glazed/devtools";
 import { model as basicProfileModel } from "@datamodels/identity-profile-basic";
@@ -51,6 +55,7 @@ const ProfileSettings = (props: Props) => {
   manager.addJSONModel(webAccountsModel);
 
   const handleClose = () => setIsOpen(false);
+
   return (
     <>
       <OptionsButton color="inherit" onClick={() => setIsOpen(true)}>
@@ -190,15 +195,25 @@ const ProfileSettings = (props: Props) => {
                 sx={{ mt: 2, borderRadius: 1 }}
                 loading={isLoading}
                 onClick={() => {
-                  setIsLoading(true);
-                  if (user) {
-                    user.set("username", userName);
-                    user.set("email", userEmail);
-                    user.save().then((res: any) => {
-                      setIsLoading(false);
-                      handleClose();
-                    });
-                  }
+                  // setIsLoading(true);
+                  // if (user) {
+                  //   user.set("username", userName);
+                  //   user.set("email", userEmail);
+                  //   user.save().then((res: any) => {
+                  //     setIsLoading(false);
+                  //     handleClose();
+                  //   });
+
+                  // }
+                  getProfileIdByHandle("fren16").then((res: any) => {
+                    console.log(res);
+                    // setLensId(res.toNumber());
+                    // setShowButton(1);
+                    // setIsLoading(false);
+                  });
+                  // getProfile(9).then((res: any) => {
+                  //   console.log(res);
+                  // });
                 }}
               >
                 Save
