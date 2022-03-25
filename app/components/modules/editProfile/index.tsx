@@ -17,14 +17,16 @@ import { ModalHeading, PrimaryButton } from "../../elements/styledComponents";
 type Props = {
   isOpen: boolean;
   handleClose: () => void;
+  litClient: any;
 };
 
-const EditProfileModal = ({ isOpen, handleClose }: Props) => {
+const EditProfileModal = ({ isOpen, handleClose, litClient }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const record = useViewerRecord("basicProfile");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
+  const [locationStreamId, setLocationStreamId] = useState("");
   const [url, setUrl] = useState("");
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const EditProfileModal = ({ isOpen, handleClose }: Props) => {
     setBio(record.content?.description as string);
     setLocation(record.content?.homeLocation as string);
     setUrl(record.content?.url as string);
-  }, []);
+  }, [isOpen]);
 
   const onSubmit = () => {
     setIsLoading(true);
@@ -43,7 +45,7 @@ const EditProfileModal = ({ isOpen, handleClose }: Props) => {
           ...record.content,
           name: name,
           description: bio,
-          homeLocation: location,
+          homeLocation: locationStreamId,
           url: url,
         })
         .then((res: any) => {
@@ -52,6 +54,29 @@ const EditProfileModal = ({ isOpen, handleClose }: Props) => {
           handleClose();
         });
     }
+  };
+
+  const encrypt = () => {
+    const stringToEncrypt = location;
+    const accessControlConditions = [
+      {
+        contractAddress: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+        standardContractType: "ERC20",
+        chain: "polygon",
+        method: "balanceOf",
+        parameters: [":userAddress"],
+        returnValueTest: {
+          comparator: ">=",
+          value: "10000000000000",
+        },
+      },
+    ];
+    litClient
+      .encryptAndWrite(stringToEncrypt, accessControlConditions)
+      .then((streamID: string) => {
+        console.log(streamID);
+        setLocationStreamId(streamID);
+      });
   };
 
   return (
@@ -121,6 +146,15 @@ const EditProfileModal = ({ isOpen, handleClose }: Props) => {
               color="inherit"
             >
               Save Changes
+            </PrimaryButton>
+            <PrimaryButton
+              variant="outlined"
+              sx={{ width: "60%", m: 2, borderRadius: 1 }}
+              onClick={encrypt}
+              loading={isLoading}
+              color="inherit"
+            >
+              Encrypt
             </PrimaryButton>
           </ModalContent>
         </ModalContainer>
