@@ -26,6 +26,7 @@ import ExploreTemplate from "../app/components/templates/explore";
 import { getTheme } from "../app/constants/muiTheme";
 import { PageContainer } from "./tribe/[id]/space/[bid]";
 import ExploreSidebar from "../app/components/modules/exploreSidebar";
+import TestProfile from "../app/components/templates/testProfiles";
 
 interface ExploreContextType {
   publicTribes: Team[];
@@ -93,7 +94,7 @@ const Home: NextPage = () => {
             <Navbar />
             <Box sx={{ display: "flex", flexDirection: "row" }}>
               <ExploreSidebar />
-              <ExploreTemplate />
+              <TestProfile />
             </Box>
           </PageContainer>
         </ExploreContext.Provider>

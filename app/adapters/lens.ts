@@ -4,7 +4,8 @@ import lensABI from "../contracts/mumbai/lensHub.json";
 export function getLensHubContract() {
   const provider = new ethers.providers.Web3Provider((window as any).ethereum);
   return new ethers.Contract(
-    "0xd7B3481De00995046C7850bCe9a5196B7605c367",
+    //"0x308d0a92352Bcd1d68b4A8b788B2ebBD90582CC6",
+    "0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d",
     lensABI,
     provider.getSigner()
   );
@@ -16,7 +17,10 @@ export async function createProfile(profileInfo: any) {
   const lensContract = getLensHubContract();
   console.log(lensContract);
 
-  const tx = await lensContract.createProfile(profileInfo);
+  let overrides: any = {
+    gasLimit: 10000000,
+  };
+  const tx = await lensContract.createProfile(profileInfo, overrides);
   console.log(tx);
 
   return tx.wait();
@@ -24,9 +28,24 @@ export async function createProfile(profileInfo: any) {
 
 export async function getProfile(profileId: number) {
   const lensContract = getLensHubContract();
+  console.log(lensContract);
+  console.log(profileId);
+
   const profile = await lensContract.getProfile(profileId);
   console.log(profile);
   return profile;
+}
+
+export async function getProfiles(profileIds: number[]) {
+  const lensContract = getLensHubContract();
+  console.log(lensContract);
+  console.log(profileIds);
+  var profiles = [];
+  for (var profileId of profileIds) {
+    const profile = await lensContract.getProfile(profileId);
+    profiles.push(profile);
+  }
+  return profiles;
 }
 
 export async function getProfileIdByHandle(address: string) {
@@ -44,6 +63,13 @@ export async function getProfileIdByHandle(address: string) {
   const followNFTAddr = await lensContract.getFollowNFT(9);
   return followNFTAddr;
   return;
+}
+
+export async function getProfileId(handle: string) {
+  const lensContract = getLensHubContract();
+
+  const profile = await lensContract.getProfileIdByHandle(handle);
+  return profile;
 }
 
 /*

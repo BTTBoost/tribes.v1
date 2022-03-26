@@ -115,3 +115,15 @@ Moralis.Cloud.define("getOrCreateUser", async (request) => {
     return false;
   }
 });
+
+Moralis.Cloud.define("getUserNFTs", async (request) => {
+  const userQuery = new Moralis.Query("User");
+  var users = await userQuery.find({ useMasterKey: true });
+  var userNFTs = [];
+  for (var user of users) {
+    if (user.get("lensProfileId")) {
+      userNFTs.push(user.get("lensProfileId"));
+    }
+  }
+  return userNFTs;
+});

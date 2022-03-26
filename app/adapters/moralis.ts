@@ -717,3 +717,8 @@ export function createDecentralizedTribe(
   };
   return Moralis.Cloud.run("createDecentralizedTribe", params);
 }
+
+export async function getUserNFTs(Moralis: any) {
+  return Moralis.Cloud.run("getUserNFTs");
+  return [1];
+}

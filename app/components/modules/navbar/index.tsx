@@ -23,7 +23,7 @@ const Navbar = (props: Props) => {
         centered
         sx={{ width: "100%", ml: "6rem" }}
       >
-        <StyledTab label="Explore Tribes" />
+        <StyledTab label="Follow Friends" />
       </StyledTabs>
       <SidebarProfile />
     </StyledNav>

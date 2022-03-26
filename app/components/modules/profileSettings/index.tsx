@@ -22,6 +22,7 @@ import {
   createProfile,
   getProfile,
   getProfileIdByHandle,
+  getProfileId,
 } from "../../../adapters/lens";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { ModelManager } from "@glazed/devtools";
@@ -29,6 +30,7 @@ import { model as basicProfileModel } from "@datamodels/identity-profile-basic";
 import { model as cryptoAccountsModel } from "@datamodels/identity-accounts-crypto";
 import { model as webAccountsModel } from "@datamodels/identity-accounts-web";
 import { tryAuthenticate } from "../auth";
+import { ethers } from "ethers";
 
 type Props = {};
 
@@ -136,7 +138,8 @@ const ProfileSettings = (props: Props) => {
                 loading={isLoading}
                 onClick={() => {
                   setIsLoading(true);
-                  var promises = [];
+                  console.log(userName);
+                  const abiEncoder = new ethers.utils.AbiCoder();
                   createProfile({
                     to: user?.get("ethAddress"),
                     handle: userName,
@@ -144,22 +147,38 @@ const ProfileSettings = (props: Props) => {
                       "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                     followModule: "0x0000000000000000000000000000000000000000",
                     followModuleData: [],
+
                     followNFTURI:
                       "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                   })
-                    .then((res: any) => console.log(res))
-                    .catch((err: any) => alert(err.message));
-                  if (user) {
-                    user.set("profileNFT", userName);
-                    user.save().then((res: any) => {
+                    .then((res: any) => {
+                      getProfileId(userName)
+                        .then((res: any) => {
+                          console.log(res);
+                          if (user) {
+                            user.set("lensProfileId", res.toNumber());
+                            user.save().then((res: any) => {
+                              setIsLoading(false);
+                              //handleClose();
+                            });
+                          }
+                        })
+                        .catch((err: any) => {
+                          alert(err.message);
+                          console.log(err);
+                          setIsLoading(false);
+                        });
+                    })
+                    .catch((err: any) => {
+                      alert(err.message);
+                      console.log(err);
                       setIsLoading(false);
-                      //handleClose();
                     });
-                  }
                 }}
               >
                 Generate Profile NFT
               </PrimaryButton>
+
               {/* <PrimaryButton
                 variant="outlined"
                 color="secondary"
