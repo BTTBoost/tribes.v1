@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useViewerRecord } from "@self.id/framework";
+import { uploadImage, useViewerRecord } from "@self.id/framework";
 import React, { useEffect, useState } from "react";
 import { ModalHeading, PrimaryButton } from "../../elements/styledComponents";
 
@@ -28,6 +28,7 @@ const EditProfileModal = ({ isOpen, handleClose, litClient }: Props) => {
   const [location, setLocation] = useState("");
   const [locationStreamId, setLocationStreamId] = useState("");
   const [url, setUrl] = useState("");
+  const [image, setImage] = useState<any>({});
 
   useEffect(() => {
     console.log(record.content);
@@ -35,14 +36,17 @@ const EditProfileModal = ({ isOpen, handleClose, litClient }: Props) => {
     setBio(record.content?.description as string);
     setLocation(record.content?.homeLocation as string);
     setUrl(record.content?.url as string);
+    setImage(record.content?.background as any);
   }, [isOpen]);
 
   const onSubmit = () => {
     setIsLoading(true);
+    console.log(image);
     if (record?.set) {
       record
         .set({
           ...record.content,
+          background: image,
           name: name,
           description: bio,
           homeLocation: locationStreamId,
@@ -95,11 +99,34 @@ const EditProfileModal = ({ isOpen, handleClose, litClient }: Props) => {
               <Typography color="text.secondary" sx={{ fontSize: 12.5, ml: 3 }}>
                 Cover
               </Typography>
-              <Banner
-                src={`https://ipfs.moralis.io:2053/ipfs/${record.content?.background?.original.src.substring(
-                  7
-                )}`}
+              <input
+                accept="image/*"
+                hidden
+                id="contained-button-file"
+                multiple
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  console.log("hu");
+                  if (file) {
+                    console.log(file);
+                    uploadImage(
+                      "https://ipfs.infura.io:5001/api/v0",
+                      file
+                    ).then((res) => {
+                      console.log(res);
+                      setImage(res);
+                    });
+                  }
+                }}
               />
+              <label htmlFor="contained-button-file">
+                <Banner
+                  src={`https://ipfs.moralis.io:2053/ipfs/${image?.original?.src.substring(
+                    7
+                  )}`}
+                />
+              </label>
             </Box>
             <TextField
               placeholder="Name"
@@ -185,7 +212,7 @@ const ModalContent = MUIStyled("div")(({ theme }) => ({
 
 const Banner = styled.img`
   height: 8rem;
-  width: 100%;
+  width: 104%;
   object-fit: cover;
 `;
 

@@ -4,6 +4,7 @@ import {
   useConnection,
   usePublicRecord,
   useViewerRecord,
+  useCore,
 } from "@self.id/framework";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -13,6 +14,7 @@ import { PrimaryButton } from "../../elements/styledComponents";
 import EditProfileModal from "../editProfile";
 import { GitHub } from "@mui/icons-material";
 import { TileDocument } from "@ceramicnetwork/stream-tile";
+import { EthereumAuthProvider, ThreeIdConnect } from "@3id/connect";
 
 type Props = {};
 
@@ -22,10 +24,36 @@ const Profile = () => {
   const [connection, connect] = useConnection();
   const publicRecord = usePublicRecord("basicProfile", id);
   const publicSocialRecord = usePublicRecord("alsoKnownAs", id);
-  console.log(publicSocialRecord);
+  const [litClient, setLitClient] = useState({} as any);
+  const [decryptedLocation, setDecryptedLocation] = useState("");
+  const core = useCore();
 
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
+
+  const InitializeLitProtocol = async () => {
+    const Integration = (await import("lit-ceramic-sdk")).Integration;
+    let litCeramicIntegration = new Integration(
+      "https://ceramic-clay.3boxlabs.com",
+      "polygon"
+    );
+    litCeramicIntegration.startLitClient(window);
+    setLitClient(litCeramicIntegration);
+  };
+
+  useEffect(() => {
+    InitializeLitProtocol();
+  }, []);
+
+  const decrypt = async () => {
+    litClient
+      .readAndDecrypt(publicRecord.content?.homeLocation)
+      .then((value: string) => {
+        console.log(value);
+        setDecryptedLocation(value);
+      });
+  };
+
   return (
     <Container>
       <EditProfileModal isOpen={isOpen} handleClose={handleClose} />
@@ -38,6 +66,7 @@ const Profile = () => {
             : "https://ipfs.moralis.io:2053/ipfs/QmYBYKJmPzzBBtBrP7VWPi4va9NsvcBmAV6N8VBPAt6pk6"
         }
       />
+
       <Heading>
         <AvatarContainer>
           {publicRecord.content?.image?.original.src ? (
@@ -103,6 +132,17 @@ const Profile = () => {
             </Typography>
           </PrimaryButton>
         ))}
+        <Typography color="text.primary">
+          {decryptedLocation || publicRecord.content?.homeLocation}
+        </Typography>
+        <PrimaryButton
+          variant="outlined"
+          sx={{ width: "60%", my: 2, borderRadius: 1 }}
+          onClick={decrypt}
+          color="inherit"
+        >
+          Decrypt
+        </PrimaryButton>
       </Body>
     </Container>
   );
@@ -137,12 +177,12 @@ const Body = styled.div`
 
 const Banner = styled.div<{ src: string }>`
   width: 100%;
-  margin-right: auto;
-  margin-left: auto;
-  position: relative;
   min-height: 16rem;
-  background-size: cover;
+  align-items: center;
+  justify-content: center;
   background-image: url(${(props) => props.src});
+  background-position: center;
+  background-size: cover;
 `;
 
 const InfoContainer = styled.div`

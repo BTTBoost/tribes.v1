@@ -4,7 +4,7 @@ import { getResolver as getKeyResolver } from "key-did-resolver";
 import { getResolver as get3IDResolver } from "@ceramicnetwork/3id-did-resolver";
 import { EthereumAuthProvider, ThreeIdConnect } from "@3id/connect";
 
-async function authenticateWithEthereum(ethereumProvider: any, ceramic) {
+async function authenticateWithEthereum(ethereumProvider: any, ceramic: any) {
   // Create a ThreeIdConnect connect instance as soon as possible in your app to start loading assets
   const threeID = new ThreeIdConnect();
   // Request accounts from the Ethereum provider
@@ -35,7 +35,7 @@ async function authenticateWithEthereum(ethereumProvider: any, ceramic) {
 }
 
 // When using extensions such as MetaMask, an Ethereum provider may be injected as `window.ethereum`
-export async function tryAuthenticate(ceramic) {
+export async function tryAuthenticate(ceramic: any) {
   if (window.ethereum == null) {
     throw new Error("No injected Ethereum provider");
   }
