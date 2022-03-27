@@ -323,3 +323,8 @@ export const registryTemp: Registry = {
 
 export const tribesLogo =
   "https://ipfs.moralis.io:2053/ipfs/QmRnbkmvYthsi6bXpZ5j14yZyfuxgVD3SaokXNRrBRsyQw";
+
+export const contractAddresses = {
+  lensHubProxy: "0x2625760C4A8e8101801D3a48eE64B2bEA42f1E96",
+  NftGatedFollowModule: "0xC7143d5bA86553C06f5730c8dC9f8187a621A8D4",
+};

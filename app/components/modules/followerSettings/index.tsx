@@ -19,9 +19,9 @@ import {
   getProfileIdByHandle,
   getProfileId,
   setFollowModule,
-  isFollowModuleWhitelisted,
 } from "../../../adapters/lens";
 import { defaultAbiCoder } from "ethers/lib/utils";
+import { contractAddresses } from "../../../constants";
 
 import { ethers } from "ethers";
 
@@ -45,6 +45,7 @@ const FollowerSettings = ({ setIsOpen, isOpen, handleClose }: Props) => {
         (res: any) => {
           console.log(res);
           setProfiles(res);
+          setNFTAddress(res.map((a) => a.followNFT));
         }
       );
   }, []);
@@ -70,11 +71,7 @@ const FollowerSettings = ({ setIsOpen, isOpen, handleClose }: Props) => {
               <TextField
                 placeholder="NFT address"
                 value={nftAddress[0]}
-                onChange={(e) => {
-                  const temp = nftAddress.filter(() => true);
-                  temp.push(e.target.value);
-                  setNFTAddress(temp);
-                }}
+                onChange={(e) => {}}
                 fullWidth
                 size="small"
               />
@@ -90,13 +87,13 @@ const FollowerSettings = ({ setIsOpen, isOpen, handleClose }: Props) => {
                   const profileId = user?.get("lensProfileId");
                   const data = defaultAbiCoder.encode(
                     ["address[]"],
-                    [["0xC627db5183F77233F02857Af21976C1a0Ec8AC60"]]
+                    [nftAddress]
                   );
 
                   if (profileId) {
                     setFollowModule(
                       profileId,
-                      "0x870526b7973b56163a6997bB7C886F5E4EA53638",
+                      contractAddresses.NftGatedFollowModule,
                       data
                     ).then((res: any) => {
                       console.log(res);

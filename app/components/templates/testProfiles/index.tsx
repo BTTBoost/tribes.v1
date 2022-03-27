@@ -30,6 +30,7 @@ const TestProfile = (props: Props) => {
           console.log(res);
           setProfiles(res);
         });
+
         getActiveFollowGates(profileIds[2]).then((res: any) => {
           console.log(`dgfg`);
           console.log(res);

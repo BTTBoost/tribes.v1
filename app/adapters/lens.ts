@@ -3,11 +3,12 @@ import { ethers } from "ethers";
 import lensABI from "../contracts/mumbai/lensHub.json";
 import nftBase from "../contracts/mumbai/LensNFTBase.json";
 import followModule from "../contracts/mumbai/ERC721GatedFollowModule.json";
+import { contractAddresses } from "../constants";
 
 export function getLensHubContract() {
   const provider = new ethers.providers.Web3Provider((window as any).ethereum);
   return new ethers.Contract(
-    "0x6C2d83262fF84cBaDb3e416D527403135D757892", // Lens hub proxy
+    contractAddresses.lensHubProxy, // Lens hub proxy
     lensABI,
     provider.getSigner()
   );
@@ -16,7 +17,7 @@ export function getLensHubContract() {
 export function getFollowModule() {
   const provider = new ethers.providers.Web3Provider((window as any).ethereum);
   return new ethers.Contract(
-    "0x870526b7973b56163a6997bB7C886F5E4EA53638", // erc721 gated follow module
+    contractAddresses.NftGatedFollowModule, // erc721 gated follow module
     followModule.abi,
     provider.getSigner()
   );
