@@ -23,13 +23,11 @@ import {
   getProfile,
   getProfileIdByHandle,
   getProfileId,
+  setFollowModule,
+  isFollowModuleWhitelisted,
 } from "../../../adapters/lens";
-import { CeramicClient } from "@ceramicnetwork/http-client";
-import { ModelManager } from "@glazed/devtools";
-import { model as basicProfileModel } from "@datamodels/identity-profile-basic";
-import { model as cryptoAccountsModel } from "@datamodels/identity-accounts-crypto";
-import { model as webAccountsModel } from "@datamodels/identity-accounts-web";
-import { tryAuthenticate } from "../auth";
+import { defaultAbiCoder } from "ethers/lib/utils";
+
 import { ethers } from "ethers";
 
 type Props = {};
@@ -48,13 +46,7 @@ const ProfileSettings = (props: Props) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const ceramic = new CeramicClient();
-  const manager = new ModelManager(ceramic);
-
-  // Add the imported models to the manager
-  manager.addJSONModel(basicProfileModel);
-  manager.addJSONModel(cryptoAccountsModel);
-  manager.addJSONModel(webAccountsModel);
+  const [activeProfileId, setActiveProfileId] = useState(false);
 
   const handleClose = () => setIsOpen(false);
 
@@ -120,7 +112,7 @@ const ProfileSettings = (props: Props) => {
                   size="small"
                 />
               </FieldContainer>
-              <FieldContainer>
+              {/*<FieldContainer>
                 <TextField
                   placeholder="Email"
                   value={userEmail}
@@ -128,7 +120,7 @@ const ProfileSettings = (props: Props) => {
                   fullWidth
                   size="small"
                 />
-              </FieldContainer>
+                </FieldContainer>*/}
 
               <PrimaryButton
                 variant="outlined"
@@ -147,7 +139,6 @@ const ProfileSettings = (props: Props) => {
                       "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                     followModule: "0x0000000000000000000000000000000000000000",
                     followModuleData: [],
-
                     followNFTURI:
                       "https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan",
                   })
@@ -177,65 +168,6 @@ const ProfileSettings = (props: Props) => {
                 }}
               >
                 Generate Profile NFT
-              </PrimaryButton>
-
-              {/* <PrimaryButton
-                variant="outlined"
-                color="secondary"
-                sx={{ width: "50%", mt: 2, borderRadius: 1 }}
-                loading={isLoading}
-                onClick={() => {
-                  setIsLoading(true);
-                  tryAuthenticate()
-                    .then((res: any) => {
-                      console.log(res);
-                      if (user && res) {
-                        user.set("did", res._id);
-                        user.save().then((res: any) => {
-                          setIsLoading(false);
-                          handleClose();
-                        });
-                      }
-
-                      setIsLoading(false);
-                    })
-                    .catch((err: any) => {
-                      alert(err);
-                      setIsLoading(false);
-                    });
-                }}
-              >
-                Connect Ceramic
-              </PrimaryButton> */}
-              <PrimaryButton
-                variant="outlined"
-                color="secondary"
-                fullWidth
-                sx={{ mt: 2, borderRadius: 1 }}
-                loading={isLoading}
-                onClick={() => {
-                  // setIsLoading(true);
-                  // if (user) {
-                  //   user.set("username", userName);
-                  //   user.set("email", userEmail);
-                  //   user.save().then((res: any) => {
-                  //     setIsLoading(false);
-                  //     handleClose();
-                  //   });
-
-                  // }
-                  getProfileIdByHandle("fren16").then((res: any) => {
-                    console.log(res);
-                    // setLensId(res.toNumber());
-                    // setShowButton(1);
-                    // setIsLoading(false);
-                  });
-                  // getProfile(9).then((res: any) => {
-                  //   console.log(res);
-                  // });
-                }}
-              >
-                Save
               </PrimaryButton>
             </ModalContent>
           </ModalContainer>

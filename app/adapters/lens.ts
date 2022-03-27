@@ -1,17 +1,39 @@
+import { AnyCnameRecord } from "dns";
 import { ethers } from "ethers";
 import lensABI from "../contracts/mumbai/lensHub.json";
+import nftBase from "../contracts/mumbai/LensNFTBase.json";
+import followModule from "../contracts/mumbai/ERC721GatedFollowModule.json";
 
 export function getLensHubContract() {
   const provider = new ethers.providers.Web3Provider((window as any).ethereum);
   return new ethers.Contract(
-    //"0x308d0a92352Bcd1d68b4A8b788B2ebBD90582CC6",
-    "0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d",
+    "0x6C2d83262fF84cBaDb3e416D527403135D757892", // Lens hub proxy
     lensABI,
     provider.getSigner()
   );
 }
 
-// "0x6CC5F26402C4d6Ab0CB9d139242E2682aA80b751"
+export function getFollowModule() {
+  const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+  return new ethers.Contract(
+    "0x870526b7973b56163a6997bB7C886F5E4EA53638", // erc721 gated follow module
+    followModule.abi,
+    provider.getSigner()
+  );
+}
+
+export function getFollowNFTContract(address: string) {
+  const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+  return new ethers.Contract(address, nftBase.abi, provider.getSigner());
+}
+
+export async function getActiveFollowGates(profileId: any) {
+  const followModule = getFollowModule();
+  console.log(followModule);
+  const tx = await followModule.getActiveNftGates(profileId);
+  console.log(tx);
+  return tx;
+}
 
 export async function createProfile(profileInfo: any) {
   const lensContract = getLensHubContract();
@@ -26,24 +48,69 @@ export async function createProfile(profileInfo: any) {
   return tx.wait();
 }
 
-export async function getProfile(profileId: number) {
+export async function follow(profileIds: any, data: any) {
   const lensContract = getLensHubContract();
   console.log(lensContract);
-  console.log(profileId);
+
+  const tx = await lensContract.follow(profileIds, data);
+  console.log(tx);
+
+  return tx.wait();
+}
+
+/*
+export async function isFollowModuleWhitelisted(module: any) {
+  const lensContract = getLensHubContract();
+  const isWhitelisted = await lensContract.isFollowModuleWhitelisted(
+    "0xFD471836031dc5108809D173A067e8486B9047A3"
+  );
+  return isWhitelisted;
+}*/
+
+export async function setFollowModule(
+  profileId: any,
+  followModule: any,
+  followModuleData: any
+) {
+  const lensContract = getLensHubContract();
+  console.log(lensContract);
+  console.log(followModule);
+  console.log(followModuleData);
+
+  const tx = await lensContract.setFollowModule(
+    profileId,
+    followModule,
+    followModuleData
+  );
+  console.log(tx);
+
+  return tx.wait();
+}
+
+export async function getProfile(profileId: number) {
+  const lensContract = getLensHubContract();
 
   const profile = await lensContract.getProfile(profileId);
-  console.log(profile);
   return profile;
 }
 
-export async function getProfiles(profileIds: number[]) {
+export async function getProfiles(profileIds: number[], callerAddress: string) {
   const lensContract = getLensHubContract();
-  console.log(lensContract);
-  console.log(profileIds);
   var profiles = [];
   for (var profileId of profileIds) {
-    const profile = await lensContract.getProfile(profileId);
-    profiles.push(profile);
+    var profile = await lensContract.getProfile(profileId);
+    console.log(profile.followNFT);
+    if (profile.followNFT !== "0x0000000000000000000000000000000000000000") {
+      var followNFTContract = getFollowNFTContract(profile.followNFT);
+      const balance = await followNFTContract.balanceOf(callerAddress);
+      var temp = Object.assign({}, profile);
+      temp.following = balance.toNumber() > 0;
+      profiles.push(temp);
+    } else {
+      var temp = Object.assign({}, profile);
+      temp.following = false;
+      profiles.push(temp);
+    }
   }
   return profiles;
 }

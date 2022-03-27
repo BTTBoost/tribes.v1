@@ -1,13 +1,15 @@
 import { Box, Grid, Typography, Button } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useExplore } from "../../../../pages";
-import { getProfiles } from "../../../adapters/lens";
+import {
+  getProfiles,
+  follow,
+  getActiveFollowGates,
+} from "../../../adapters/lens";
 import { getUserNFTs } from "../../../adapters/moralis";
 
-import { Team } from "../../../types";
-import DAOCard from "../../elements/daoCard";
-import { StyledTab, StyledTabs } from "../../elements/styledComponents";
 import { useMoralis } from "react-moralis";
+import ProfileCard from "./ProfileCard";
 
 type Props = {};
 
@@ -17,19 +19,25 @@ const TestProfile = (props: Props) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
-  const profileIds = [1];
   const [profiles, setProfiles] = useState([]);
+  const [profileIds, setProfileIds] = useState([]);
+
   useEffect(() => {
     if (isInitialized) {
       getUserNFTs(Moralis).then((profileIds: any) => {
-        console.log(profileIds);
-        getProfiles(profileIds).then((res: any) => {
+        setProfileIds(profileIds);
+        getProfiles(profileIds, user?.get("ethAddress")).then((res: any) => {
           console.log(res);
           setProfiles(res);
+        });
+        getActiveFollowGates(profileIds[2]).then((res: any) => {
+          console.log(`dgfg`);
+          console.log(res);
         });
       });
     }
   }, [isInitialized]);
+
   return (
     <Box
       sx={{
@@ -51,13 +59,14 @@ const TestProfile = (props: Props) => {
         <Grid container spacing={8} columns={15}>
           {profiles.map((profile: object, index: number) => (
             <Grid item xs={3} key={index}>
-              <Typography sx={{ color: "#ffffff" }}>
-                {profile.handle}
-              </Typography>
-
-              <Button sx={{ color: "#ffffff" }} onClick={() => {}}>
-                Follow
-              </Button>
+              <ProfileCard
+                image={profile.imageURI}
+                handle={profile.handle}
+                followers={1}
+                profileId={profileIds[index]}
+                did={"ssa"}
+                following={profile.following}
+              />
             </Grid>
           ))}
         </Grid>
