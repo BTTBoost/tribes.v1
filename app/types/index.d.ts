@@ -136,6 +136,7 @@ export interface Task {
   issueLink?: string;
   boardId: string;
   createdAt: string;
+  type: string;
 }
 
 export interface Contracts {
